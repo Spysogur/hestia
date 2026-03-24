@@ -1,67 +1,126 @@
 import { Router } from 'express';
+import { Container } from '../../di/container';
+import { createAuthMiddleware } from '../../auth/authMiddleware';
+import { validate } from '../middleware/validate';
+import { createHelpRequestSchema, createHelpOfferSchema } from '../validation/help.schema';
 
-export const helpRouter = Router();
+export function createHelpRouter(container: Container): Router {
+  const router = Router();
+  const auth = createAuthMiddleware(container.jwtService);
 
-// POST /api/v1/help/requests
-helpRouter.post('/requests', async (req, res, next) => {
-  try {
-    // TODO: wire up CreateHelpRequest use case
-    res.status(201).json({ message: 'Help request created', data: req.body });
-  } catch (error) {
-    next(error);
-  }
-});
+  // POST /api/v1/help/requests
+  router.post('/requests', auth, validate(createHelpRequestSchema), async (req, res, next) => {
+    try {
+      const result = await container.useCases.createHelpRequest.execute({
+        ...req.body,
+        requesterId: req.user!.userId,
+      });
+      res.status(201).json({ status: 'success', data: result });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-// GET /api/v1/help/requests/emergency/:emergencyId
-helpRouter.get('/requests/emergency/:emergencyId', async (req, res, next) => {
-  try {
-    // TODO: wire up use case
-    res.json({ message: 'Help requests for emergency', emergencyId: req.params.emergencyId, data: [] });
-  } catch (error) {
-    next(error);
-  }
-});
+  // GET /api/v1/help/requests/emergency/:emergencyId
+  router.get('/requests/emergency/:emergencyId', auth, async (req, res, next) => {
+    try {
+      const requests = await container.repositories.helpRequestRepository.findByEmergency(
+        req.params.emergencyId
+      );
+      res.json({ status: 'success', data: requests });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-// POST /api/v1/help/offers
-helpRouter.post('/offers', async (req, res, next) => {
-  try {
-    // TODO: wire up CreateHelpOffer use case
-    res.status(201).json({ message: 'Help offer created', data: req.body });
-  } catch (error) {
-    next(error);
-  }
-});
+  // POST /api/v1/help/offers
+  router.post('/offers', auth, validate(createHelpOfferSchema), async (req, res, next) => {
+    try {
+      const offer = await container.useCases.createHelpOffer.execute({
+        ...req.body,
+        volunteerId: req.user!.userId,
+      });
+      res.status(201).json({ status: 'success', data: offer });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-// GET /api/v1/help/offers/emergency/:emergencyId
-helpRouter.get('/offers/emergency/:emergencyId', async (req, res, next) => {
-  try {
-    // TODO: wire up use case
-    res.json({ message: 'Help offers for emergency', emergencyId: req.params.emergencyId, data: [] });
-  } catch (error) {
-    next(error);
-  }
-});
+  // GET /api/v1/help/offers/emergency/:emergencyId
+  router.get('/offers/emergency/:emergencyId', auth, async (req, res, next) => {
+    try {
+      const offers = await container.repositories.helpOfferRepository.findByEmergency(
+        req.params.emergencyId
+      );
+      res.json({ status: 'success', data: offers });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-// POST /api/v1/help/match/:requestId/:offerId
-helpRouter.post('/match/:requestId/:offerId', async (req, res, next) => {
-  try {
-    // TODO: wire up MatchHelpRequest use case
-    res.json({
-      message: 'Matched',
-      requestId: req.params.requestId,
-      offerId: req.params.offerId,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+  // POST /api/v1/help/match/:requestId/:offerId
+  router.post('/match/:requestId/:offerId', auth, async (req, res, next) => {
+    try {
+      const { requestId, offerId } = req.params;
 
-// POST /api/v1/help/auto-match/:emergencyId
-helpRouter.post('/auto-match/:emergencyId', async (_req, res, next) => {
-  try {
-    // TODO: wire up AutoMatch use case
-    res.json({ message: 'Auto-matching complete', matches: [] });
-  } catch (error) {
-    next(error);
-  }
-});
+      const request = await container.repositories.helpRequestRepository.findById(requestId);
+      if (!request) {
+        res.status(404).json({ status: 'error', message: 'Help request not found' });
+        return;
+      }
+
+      const offer = await container.repositories.helpOfferRepository.findById(offerId);
+      if (!offer) {
+        res.status(404).json({ status: 'error', message: 'Help offer not found' });
+        return;
+      }
+
+      request.matchVolunteer(offer.volunteerId);
+      offer.matchToRequest(requestId);
+
+      const [updatedRequest, updatedOffer] = await Promise.all([
+        container.repositories.helpRequestRepository.update(request),
+        container.repositories.helpOfferRepository.update(offer),
+      ]);
+
+      res.json({ status: 'success', data: { request: updatedRequest, offer: updatedOffer } });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // POST /api/v1/help/auto-match/:emergencyId
+  router.post('/auto-match/:emergencyId', auth, async (req, res, next) => {
+    try {
+      const { emergencyId } = req.params;
+      const openRequests = await container.repositories.helpRequestRepository.findOpenByEmergency(emergencyId);
+      const availableOffers = await container.repositories.helpOfferRepository.findAvailableByEmergency(emergencyId);
+
+      const matches: Array<{ requestId: string; offerId: string }> = [];
+
+      for (const request of openRequests) {
+        const compatible = availableOffers.filter(
+          (o) => o.type === request.type && o.isAvailable()
+        );
+        if (compatible.length > 0) {
+          const offer = compatible[0];
+          request.matchVolunteer(offer.volunteerId);
+          offer.matchToRequest(request.id);
+          await Promise.all([
+            container.repositories.helpRequestRepository.update(request),
+            container.repositories.helpOfferRepository.update(offer),
+          ]);
+          matches.push({ requestId: request.id, offerId: offer.id });
+          // Remove used offer from further matching
+          availableOffers.splice(availableOffers.indexOf(offer), 1);
+        }
+      }
+
+      res.json({ status: 'success', data: { matches } });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  return router;
+}
