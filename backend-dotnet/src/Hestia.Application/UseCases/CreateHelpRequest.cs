@@ -1,4 +1,5 @@
 using Hestia.Application.DTOs;
+using Hestia.Application.Interfaces;
 using Hestia.Domain.Entities;
 using Hestia.Domain.Repositories;
 using Hestia.Domain.Services;
@@ -11,17 +12,20 @@ public class CreateHelpRequest
     private readonly IEmergencyRepository _emergencyRepository;
     private readonly IHelpOfferRepository _helpOfferRepository;
     private readonly MatchingService _matchingService;
+    private readonly INotificationService _notificationService;
 
     public CreateHelpRequest(
         IHelpRequestRepository helpRequestRepository,
         IEmergencyRepository emergencyRepository,
         IHelpOfferRepository helpOfferRepository,
-        MatchingService matchingService)
+        MatchingService matchingService,
+        INotificationService notificationService)
     {
         _helpRequestRepository = helpRequestRepository;
         _emergencyRepository = emergencyRepository;
         _helpOfferRepository = helpOfferRepository;
         _matchingService = matchingService;
+        _notificationService = notificationService;
     }
 
     public async Task<CreateHelpRequestResponse> ExecuteAsync(
@@ -41,6 +45,10 @@ public class CreateHelpRequest
             dto.Latitude, dto.Longitude, dto.NumberOfPeople);
 
         var saved = await _helpRequestRepository.SaveAsync(request, ct);
+
+        // Broadcast to SignalR clients
+        saved.Emergency = emergency;
+        await _notificationService.BroadcastHelpRequestCreatedAsync(saved, ct);
 
         var availableOffers = await _helpOfferRepository.FindAvailableByTypeAsync(dto.EmergencyId, dto.Type, ct);
         var matches = _matchingService.FindBestMatches(saved, availableOffers, 5);

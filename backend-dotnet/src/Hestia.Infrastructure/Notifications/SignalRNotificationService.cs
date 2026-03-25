@@ -1,4 +1,5 @@
 using Hestia.Application.Interfaces;
+using Hestia.Domain.Entities;
 using Hestia.Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -38,8 +39,35 @@ public class SignalRNotificationService : INotificationService
 
     public Task SendSmsAsync(string phone, string message, CancellationToken ct)
     {
-        // SMS integration placeholder — wire up Twilio or similar here
         _logger.LogInformation("SMS to {Phone}: {Message}", phone, message);
         return Task.CompletedTask;
+    }
+
+    public async Task BroadcastEmergencyActivatedAsync(Emergency emergency, CancellationToken ct)
+    {
+        await _hubContext.Clients
+            .Group($"community:{emergency.CommunityId}")
+            .SendAsync("emergency:activated", emergency, ct);
+
+        _logger.LogInformation("Broadcast emergency:activated {Id} to community {CommunityId}",
+            emergency.Id, emergency.CommunityId);
+    }
+
+    public async Task BroadcastHelpRequestCreatedAsync(HelpRequest request, CancellationToken ct)
+    {
+        await _hubContext.Clients
+            .Group($"community:{request.Emergency?.CommunityId}")
+            .SendAsync("help:request:created", request, ct);
+
+        _logger.LogInformation("Broadcast help:request:created {Id}", request.Id);
+    }
+
+    public async Task BroadcastHelpOfferCreatedAsync(HelpOffer offer, CancellationToken ct)
+    {
+        await _hubContext.Clients
+            .Group($"community:{offer.Emergency?.CommunityId}")
+            .SendAsync("help:offer:created", offer, ct);
+
+        _logger.LogInformation("Broadcast help:offer:created {Id}", offer.Id);
     }
 }

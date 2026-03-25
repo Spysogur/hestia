@@ -59,6 +59,9 @@ public class ActivateEmergency
                 ct);
         }
 
+        // Broadcast to SignalR clients
+        await _notificationService.BroadcastEmergencyActivatedAsync(saved, ct);
+
         return saved;
     }
 }
