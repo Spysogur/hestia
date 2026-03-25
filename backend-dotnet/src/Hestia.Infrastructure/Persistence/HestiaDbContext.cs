@@ -41,12 +41,7 @@ public class HestiaDbContext : DbContext
             e.Property(u => u.Skills).HasColumnName("skills")
                 .HasColumnType("text[]")
                 .HasDefaultValueSql("'{}'");
-            e.Property(u => u.Vulnerabilities).HasColumnName("vulnerabilities")
-                .HasColumnType("text[]")
-                .HasConversion(
-                    v => v.Select(x => x.ToString()).ToArray(),
-                    v => v.Select(Enum.Parse<VulnerabilityType>).ToList())
-                .HasDefaultValueSql("'{}'");
+            e.Ignore(u => u.Vulnerabilities);
             e.Property(u => u.Resources).HasColumnName("resources")
                 .HasColumnType("text[]")
                 .HasDefaultValueSql("'{}'");
