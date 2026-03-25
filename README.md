@@ -26,7 +26,8 @@ Hestia follows **Onion Architecture** (Clean Architecture) — domain logic at t
 ```
 
 ## Tech Stack
-- **Backend:** Node.js + TypeScript + Express
+- **Backend:** C# .NET 9.0 (ASP.NET Core) — `backend-dotnet/`
+- **Backend (legacy):** Node.js + TypeScript + Express — `backend/`
 - **Database:** PostgreSQL + PostGIS (geospatial)
 - **Frontend:** React Native (mobile) + Next.js (web)
 - **Real-time:** Socket.io
@@ -36,7 +37,11 @@ Hestia follows **Onion Architecture** (Clean Architecture) — domain logic at t
 
 ## Getting Started
 ```bash
-# Backend
+# Backend (.NET)
+cd backend-dotnet && dotnet run --project src/Hestia.API
+# Swagger UI: http://localhost:5000/swagger
+
+# Backend (Node.js — legacy)
 cd backend && npm install && npm run dev
 
 # Web Frontend
