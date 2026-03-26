@@ -33,7 +33,7 @@ export default function CommunityDetailPage() {
     }
   }
 
-  const mapPins = emergencies.map((e) => ({
+  const mapPins: Array<{ lat: number; lng: number; type: 'emergency' | 'shelter' | 'hazard' | 'user'; label: string; severity?: EmergencySeverity; id: string }> = emergencies.map((e) => ({
     lat: e.latitude,
     lng: e.longitude,
     type: 'emergency' as const,

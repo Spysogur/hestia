@@ -105,7 +105,7 @@ export default function CommunityDetailScreen() {
           </View>
         </View>
         <Text style={styles.description}>{community.description}</Text>
-        <Text style={styles.meta}>📍 {community.region}, {community.country} • {community.radiusKm}km radius</Text>
+        <Text style={styles.meta}>📍 {community.region}, {community.country} • {community.radius}km radius</Text>
       </View>
 
       {/* Join Button */}

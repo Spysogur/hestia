@@ -166,6 +166,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   role: UserRole;
+  communityId?: string;
 }
 
 export interface LoginResponse {

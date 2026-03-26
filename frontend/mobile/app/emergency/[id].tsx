@@ -20,7 +20,6 @@ import {
   HelpOffer,
   HelpType,
   HelpRequestPriority,
-  HelpOfferStatus,
 } from "@/lib/types";
 import HelpRequestCard from "@/components/HelpRequestCard";
 import HelpOfferCard from "@/components/HelpOfferCard";
@@ -107,7 +106,7 @@ export default function EmergencyDetailScreen() {
     try {
       await helpApi.createRequest({
         emergencyId: id!,
-        type: reqType,
+        requestType: reqType,
         priority: reqPriority,
         title: reqTitle,
         description: reqDesc,
@@ -126,7 +125,7 @@ export default function EmergencyDetailScreen() {
     try {
       await helpApi.createOffer({
         emergencyId: id!,
-        type: offType,
+        offerType: offType,
         description: offDesc,
         latitude: emergency?.latitude ?? 0,
         longitude: emergency?.longitude ?? 0,
@@ -183,7 +182,7 @@ export default function EmergencyDetailScreen() {
             </View>
           </View>
           <Text style={styles.description}>{emergency.description}</Text>
-          <Text style={styles.meta}>Radius: {emergency.radiusKm}km</Text>
+          <Text style={styles.meta}>Community: {emergency.communityId.slice(0, 8)}...</Text>
         </View>
 
         {/* Actions */}

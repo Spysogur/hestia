@@ -36,6 +36,23 @@ export enum HelpOfferStatus {
   COMPLETED = "COMPLETED",
 }
 
+export enum HelpType {
+  MEDICAL = "MEDICAL",
+  FOOD = "FOOD",
+  SHELTER = "SHELTER",
+  TRANSPORT = "TRANSPORT",
+  RESCUE = "RESCUE",
+  SUPPLIES = "SUPPLIES",
+  OTHER = "OTHER",
+}
+
+export enum HelpRequestPriority {
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  CRITICAL = "CRITICAL",
+}
+
 // ---- User & Auth ----
 
 export interface User {
@@ -43,6 +60,8 @@ export interface User {
   email: string;
   fullName: string;
   phone: string;
+  role?: string;
+  isVerified?: boolean;
   skills?: string[];
   vulnerabilities?: string[];
   resources?: string[];
@@ -83,6 +102,9 @@ export interface Community {
   latitude: number;
   longitude: number;
   radius?: number;
+  isActive?: boolean;
+  region?: string;
+  country?: string;
   memberCount?: number;
   createdAt: string;
 }
@@ -144,6 +166,9 @@ export interface CreateHelpRequestPayload {
   emergencyId: string;
   description: string;
   requestType: string;
+  title?: string;
+  priority?: string;
+  numberOfPeople?: number;
   latitude?: number;
   longitude?: number;
 }
@@ -152,6 +177,7 @@ export interface CreateHelpOfferPayload {
   emergencyId: string;
   description: string;
   offerType: string;
+  capacity?: number;
   latitude?: number;
   longitude?: number;
 }

@@ -157,7 +157,7 @@ export default function EmergencyPage() {
     }
   }
 
-  const mapPins = emergency
+  const mapPins: Array<{ lat: number; lng: number; type: 'emergency' | 'shelter' | 'hazard' | 'user'; label: string; severity?: EmergencySeverity; id: string }> = emergency
     ? [{ lat: emergency.latitude, lng: emergency.longitude, type: 'emergency' as const, label: emergency.title, severity: emergency.severity, id: emergency.id }]
     : [];
 
