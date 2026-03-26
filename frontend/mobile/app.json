@@ -39,6 +39,9 @@
     "scheme": "hestia",
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "http://localhost:5000"
     }
   }
 }

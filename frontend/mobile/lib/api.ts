@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import * as SecureStore from "expo-secure-store";
+import Constants from "expo-constants";
 import {
   ApiResponse,
   AuthResponse,
@@ -15,7 +16,11 @@ import {
   User,
 } from "./types";
 
-export const API_URL = "http://localhost:5000";
+// Configure via app.json extra.apiUrl or EXPO_PUBLIC_API_URL env var
+export const API_URL =
+  Constants.expoConfig?.extra?.apiUrl ??
+  process.env.EXPO_PUBLIC_API_URL ??
+  "http://localhost:5000";
 export const TOKEN_KEY = "hestia_jwt";
 
 export const apiClient = axios.create({
