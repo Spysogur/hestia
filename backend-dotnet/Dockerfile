@@ -8,6 +8,7 @@ COPY src/Hestia.Domain/Hestia.Domain.csproj src/Hestia.Domain/
 COPY src/Hestia.Application/Hestia.Application.csproj src/Hestia.Application/
 COPY src/Hestia.Infrastructure/Hestia.Infrastructure.csproj src/Hestia.Infrastructure/
 COPY src/Hestia.API/Hestia.API.csproj src/Hestia.API/
+COPY src/Hestia.Tests/Hestia.Tests.csproj src/Hestia.Tests/
 
 RUN dotnet restore
 
