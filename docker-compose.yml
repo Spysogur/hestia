@@ -46,7 +46,7 @@ services:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=hestia;Username=hestia;Password=hestia"
       JwtSettings__Secret: "dev-secret-change-in-production-min-32-chars"
       JwtSettings__ExpiryHours: "168"
-      CorsSettings__AllowedOrigin: "http://localhost:3001"
+      CorsSettings__AllowedOrigin: "*"
     ports:
       - "5000:5000"
     depends_on:
