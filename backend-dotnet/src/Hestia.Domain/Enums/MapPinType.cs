@@ -6,6 +6,7 @@ public enum MapPinType
     Shelter,
     Danger,
     MeetingPoint,
-    MedicalStation,
+    Medical,
+    Distribution,
     Other
 }

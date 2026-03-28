@@ -59,7 +59,8 @@ public class CommunitiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateCommunityRequest request, CancellationToken ct)
     {
-        var community = await _createCommunity.ExecuteAsync(request, ct);
+        var userId = GetUserId();
+        var community = await _createCommunity.ExecuteAsync(request, userId, ct);
         return CreatedAtAction(nameof(GetById), new { id = community.Id },
             new { status = "success", data = community });
     }
@@ -84,7 +85,12 @@ public class CommunitiesController : ControllerBase
     {
         var userId = GetUserId();
         var user = await _joinCommunity.ExecuteAsync(userId, id, ct);
-        return Ok(new { status = "success", data = user });
+        return Ok(new { status = "success", data = new {
+            user.Id, user.Email, user.FullName, user.Phone, user.Role,
+            user.Skills, user.Vulnerabilities, user.Resources,
+            user.Latitude, user.Longitude, user.CommunityId,
+            user.IsVerified, user.CreatedAt, user.UpdatedAt
+        }});
     }
 
     private Guid GetUserId()

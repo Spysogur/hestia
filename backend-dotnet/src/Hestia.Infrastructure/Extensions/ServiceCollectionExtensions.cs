@@ -1,5 +1,6 @@
 using Hestia.Application.Interfaces;
 using Hestia.Application.UseCases;
+using Hestia.Domain.Enums;
 using Hestia.Domain.Repositories;
 using Hestia.Domain.Services;
 using Hestia.Infrastructure.Auth;
@@ -10,6 +11,7 @@ using Hestia.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Hestia.Infrastructure.Persistence;
 
 namespace Hestia.Infrastructure.Extensions;
 
@@ -19,11 +21,23 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // ── EF Core / PostgreSQL ──────────────────────────────
+        // ── EF Core / PostgreSQL with native Postgres enum mappings ──
+        var connectionString = configuration.GetConnectionString("DefaultConnection")!;
         services.AddDbContext<HestiaDbContext>(options =>
-            options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection"),
-                npgsql => npgsql.MigrationsAssembly(typeof(HestiaDbContext).Assembly.FullName)));
+            options.UseNpgsql(connectionString, npgsql =>
+            {
+                npgsql.MigrationsAssembly(typeof(HestiaDbContext).Assembly.FullName);
+                npgsql.MapEnum<UserRole>("user_role");
+                npgsql.MapEnum<VulnerabilityType>("vulnerability_type");
+                npgsql.MapEnum<EmergencyType>("emergency_type");
+                npgsql.MapEnum<EmergencySeverity>("emergency_severity");
+                npgsql.MapEnum<EmergencyStatus>("emergency_status");
+                npgsql.MapEnum<HelpType>("help_request_type");
+                npgsql.MapEnum<HelpRequestPriority>("help_request_priority");
+                npgsql.MapEnum<HelpRequestStatus>("help_request_status");
+                npgsql.MapEnum<HelpOfferStatus>("help_offer_status");
+                npgsql.MapEnum<MapPinType>("map_pin_type");
+            }));
 
         // ── Repositories ──────────────────────────────────────
         services.AddScoped<IUserRepository, UserRepository>();

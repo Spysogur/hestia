@@ -22,6 +22,7 @@ public class HestiaDbContext : DbContext
         modelBuilder.HasPostgresExtension("uuid-ossp");
         modelBuilder.HasPostgresExtension("postgis");
 
+
         // ── User ──────────────────────────────────────────────
         modelBuilder.Entity<User>(e =>
         {
@@ -35,13 +36,11 @@ public class HestiaDbContext : DbContext
             e.Property(u => u.FullName).HasColumnName("full_name").HasMaxLength(255).IsRequired();
             e.Property(u => u.Phone).HasColumnName("phone").HasMaxLength(50).IsRequired();
             e.Property(u => u.Role).HasColumnName("role")
-                .HasConversion<string>()
-                .HasColumnType("varchar(20)")
                 .HasDefaultValue(UserRole.Member);
             e.Property(u => u.Skills).HasColumnName("skills")
                 .HasColumnType("text[]")
                 .HasDefaultValueSql("'{}'");
-            e.Ignore(u => u.Vulnerabilities);
+            e.Property(u => u.Vulnerabilities).HasColumnName("vulnerabilities");
             e.Property(u => u.Resources).HasColumnName("resources")
                 .HasColumnType("text[]")
                 .HasDefaultValueSql("'{}'");
@@ -84,12 +83,9 @@ public class HestiaDbContext : DbContext
             e.HasKey(em => em.Id);
             e.Property(em => em.Id).HasColumnName("id").HasDefaultValueSql("uuid_generate_v4()");
             e.Property(em => em.CommunityId).HasColumnName("community_id").IsRequired();
-            e.Property(em => em.Type).HasColumnName("type")
-                .HasConversion<string>().HasColumnType("varchar(20)").IsRequired();
-            e.Property(em => em.Severity).HasColumnName("severity")
-                .HasConversion<string>().HasColumnType("varchar(20)").IsRequired();
+            e.Property(em => em.Type).HasColumnName("type").IsRequired();
+            e.Property(em => em.Severity).HasColumnName("severity").IsRequired();
             e.Property(em => em.Status).HasColumnName("status")
-                .HasConversion<string>().HasColumnType("varchar(20)")
                 .HasDefaultValue(EmergencyStatus.Active);
             e.Property(em => em.Title).HasColumnName("title").HasMaxLength(255).IsRequired();
             e.Property(em => em.Description).HasColumnName("description").IsRequired();
@@ -114,12 +110,9 @@ public class HestiaDbContext : DbContext
             e.Property(r => r.Id).HasColumnName("id").HasDefaultValueSql("uuid_generate_v4()");
             e.Property(r => r.EmergencyId).HasColumnName("emergency_id").IsRequired();
             e.Property(r => r.RequesterId).HasColumnName("requester_id").IsRequired();
-            e.Property(r => r.Type).HasColumnName("type")
-                .HasConversion<string>().HasColumnType("varchar(20)").IsRequired();
-            e.Property(r => r.Priority).HasColumnName("priority")
-                .HasConversion<string>().HasColumnType("varchar(20)").IsRequired();
+            e.Property(r => r.Type).HasColumnName("type").IsRequired();
+            e.Property(r => r.Priority).HasColumnName("priority").IsRequired();
             e.Property(r => r.Status).HasColumnName("status")
-                .HasConversion<string>().HasColumnType("varchar(20)")
                 .HasDefaultValue(HelpRequestStatus.Open);
             e.Property(r => r.Title).HasColumnName("title").HasMaxLength(255).IsRequired();
             e.Property(r => r.Description).HasColumnName("description").IsRequired();
@@ -141,10 +134,8 @@ public class HestiaDbContext : DbContext
             e.Property(o => o.Id).HasColumnName("id").HasDefaultValueSql("uuid_generate_v4()");
             e.Property(o => o.EmergencyId).HasColumnName("emergency_id").IsRequired();
             e.Property(o => o.VolunteerId).HasColumnName("volunteer_id").IsRequired();
-            e.Property(o => o.Type).HasColumnName("type")
-                .HasConversion<string>().HasColumnType("varchar(20)").IsRequired();
+            e.Property(o => o.Type).HasColumnName("type").IsRequired();
             e.Property(o => o.Status).HasColumnName("status")
-                .HasConversion<string>().HasColumnType("varchar(20)")
                 .HasDefaultValue(HelpOfferStatus.Available);
             e.Property(o => o.Description).HasColumnName("description").IsRequired();
             e.Property(o => o.Latitude).HasColumnName("latitude").IsRequired();
@@ -164,8 +155,7 @@ public class HestiaDbContext : DbContext
             e.Property(p => p.Id).HasColumnName("id").HasDefaultValueSql("uuid_generate_v4()");
             e.Property(p => p.EmergencyId).HasColumnName("emergency_id").IsRequired();
             e.Property(p => p.CreatedBy).HasColumnName("created_by").IsRequired();
-            e.Property(p => p.Type).HasColumnName("type")
-                .HasConversion<string>().HasColumnType("varchar(30)").IsRequired();
+            e.Property(p => p.Type).HasColumnName("type").IsRequired();
             e.Property(p => p.Label).HasColumnName("label").HasMaxLength(255).IsRequired();
             e.Property(p => p.Latitude).HasColumnName("latitude").IsRequired();
             e.Property(p => p.Longitude).HasColumnName("longitude").IsRequired();

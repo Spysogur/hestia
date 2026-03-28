@@ -4,23 +4,23 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- Enums
-CREATE TYPE user_role AS ENUM ('MEMBER', 'COORDINATOR', 'ADMIN');
+CREATE TYPE user_role AS ENUM ('member', 'coordinator', 'admin');
 CREATE TYPE vulnerability_type AS ENUM (
-  'ELDERLY', 'DISABLED', 'NO_VEHICLE', 'MEDICAL_CONDITION', 'CHILDREN', 'LIMITED_MOBILITY'
+  'elderly', 'disabled', 'no_vehicle', 'medical_condition', 'children', 'limited_mobility'
 );
 CREATE TYPE emergency_type AS ENUM (
-  'WILDFIRE', 'EARTHQUAKE', 'FLOOD', 'STORM', 'TSUNAMI', 'LANDSLIDE', 'HEATWAVE', 'OTHER'
+  'wildfire', 'earthquake', 'flood', 'storm', 'tsunami', 'landslide', 'heatwave', 'other'
 );
-CREATE TYPE emergency_severity AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
-CREATE TYPE emergency_status AS ENUM ('ACTIVE', 'MONITORING', 'RESOLVED', 'CANCELLED');
+CREATE TYPE emergency_severity AS ENUM ('low', 'medium', 'high', 'critical');
+CREATE TYPE emergency_status AS ENUM ('active', 'monitoring', 'resolved', 'cancelled');
 CREATE TYPE help_request_type AS ENUM (
-  'EVACUATION', 'MEDICAL', 'SHELTER', 'SUPPLIES', 'TRANSPORT', 'RESCUE', 'INFORMATION', 'OTHER'
+  'evacuation', 'medical', 'shelter', 'supplies', 'transport', 'rescue', 'information', 'other'
 );
-CREATE TYPE help_request_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
-CREATE TYPE help_request_status AS ENUM ('OPEN', 'MATCHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
-CREATE TYPE help_offer_status AS ENUM ('AVAILABLE', 'MATCHED', 'IN_PROGRESS', 'COMPLETED', 'WITHDRAWN');
+CREATE TYPE help_request_priority AS ENUM ('low', 'medium', 'high', 'urgent');
+CREATE TYPE help_request_status AS ENUM ('open', 'matched', 'in_progress', 'completed', 'cancelled');
+CREATE TYPE help_offer_status AS ENUM ('available', 'matched', 'in_progress', 'completed', 'withdrawn');
 CREATE TYPE map_pin_type AS ENUM (
-  'RESOURCE', 'SHELTER', 'DANGER', 'MEETING_POINT', 'MEDICAL', 'DISTRIBUTION', 'OTHER'
+  'resource', 'shelter', 'danger', 'meeting_point', 'medical', 'distribution', 'other'
 );
 
 -- Users
@@ -30,7 +30,7 @@ CREATE TABLE users (
   password_hash   VARCHAR(255) NOT NULL,
   full_name       VARCHAR(255) NOT NULL,
   phone           VARCHAR(50) NOT NULL,
-  role            user_role NOT NULL DEFAULT 'MEMBER',
+  role            user_role NOT NULL DEFAULT 'member',
   skills          TEXT[] NOT NULL DEFAULT '{}',
   vulnerabilities vulnerability_type[] NOT NULL DEFAULT '{}',
   resources       TEXT[] NOT NULL DEFAULT '{}',
@@ -76,7 +76,7 @@ CREATE TABLE emergencies (
   community_id UUID NOT NULL REFERENCES communities (id) ON DELETE CASCADE,
   type         emergency_type NOT NULL,
   severity     emergency_severity NOT NULL,
-  status       emergency_status NOT NULL DEFAULT 'ACTIVE',
+  status       emergency_status NOT NULL DEFAULT 'active',
   title        VARCHAR(255) NOT NULL,
   description  TEXT NOT NULL,
   location     GEOGRAPHY(POINT, 4326),
@@ -101,7 +101,7 @@ CREATE TABLE help_requests (
   requester_id         UUID NOT NULL REFERENCES users (id),
   type                 help_request_type NOT NULL,
   priority             help_request_priority NOT NULL,
-  status               help_request_status NOT NULL DEFAULT 'OPEN',
+  status               help_request_status NOT NULL DEFAULT 'open',
   title                VARCHAR(255) NOT NULL,
   description          TEXT NOT NULL,
   location             GEOGRAPHY(POINT, 4326),
@@ -126,7 +126,7 @@ CREATE TABLE help_offers (
   emergency_id       UUID NOT NULL REFERENCES emergencies (id) ON DELETE CASCADE,
   volunteer_id       UUID NOT NULL REFERENCES users (id),
   type               help_request_type NOT NULL,
-  status             help_offer_status NOT NULL DEFAULT 'AVAILABLE',
+  status             help_offer_status NOT NULL DEFAULT 'available',
   description        TEXT NOT NULL,
   location           GEOGRAPHY(POINT, 4326),
   latitude           DOUBLE PRECISION,
